@@ -1,28 +1,19 @@
-const db = require('../models/db.model');
-const config = require('../config/auth.config');
-const User = db.user;
-
-const Op = db.Sequelize.Op;
-
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
-// Help functions
-const signConfCode = (base) => {
-  const characters =
-    '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let token = base;
-  for (let i = 0; i < 15; i++) {
-    token += characters[Math.floor(Math.random() * characters.length)];
-  }
-  return jwt.sign({ confirmationCode: token }, config.secret);
-};
+const config = require('../config/auth.config');
+const db = require('../models/db.model');
+
+const User = db.user;
+const Op = db.Sequelize.Op;
 
 exports.signup = (req, res) => {
   User.create({
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 8),
-    confirmationCode: getNewConfCode(req.body.email),
+    confirmationToken: crypto.randomBytes(16).toString('hex'),
+    confirmationTokenGeneratedAt: db.Sequelize.literal('CURRENT_TIMESTAMP'),
   })
     .then((user) => {
       res.status(200).send({

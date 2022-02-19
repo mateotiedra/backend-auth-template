@@ -26,7 +26,7 @@ const db = require('./app/models/db.model');
 // true to set the database for the first time or reset it
 const resetDB = true;
 db.sequelize.sync({ force: resetDB }).then(() => {
-  if (!resetDB) {
+  if (resetDB) {
     console.log('Drop and Resync Database with { force: true }');
     initial();
   }
@@ -39,8 +39,6 @@ app.get('/', (req, res) => {
 
 // routes
 require('./app/routes/auth.routes')(app);
-/* require("./app/routes/user.routes")(app);
-require("./app/routes/bid.routes")(app); */
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

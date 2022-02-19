@@ -1,5 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const attributes = {
+    // Auth attributes
     uuid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV1,
@@ -7,9 +8,17 @@ module.exports = (sequelize, DataTypes) => {
     },
     email: {
       type: DataTypes.STRING,
+      allowNull: false,
     },
-    confirmationCode: {
+    confirmationToken: {
       type: DataTypes.STRING,
+    },
+    confirmationTokenGeneratedAt: {
+      type: 'TIMESTAMP',
+    },
+    status: {
+      type: DataTypes.ENUM('pending', 'active', 'disabled'),
+      defaultValue: 'pending',
     },
     password: {
       type: DataTypes.STRING,
