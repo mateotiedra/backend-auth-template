@@ -10,11 +10,15 @@ const User = db.user;
 const Op = db.Sequelize.Op;
 
 exports.signUp = (req, res) => {
+  // Hash the password
   bcrypt.hash(req.body.password, 10, function (err, hash) {
     const password = hash;
-    console.log('hello');
+
+    // Generate the confirmation token
     crypto.randomBytes(16, function (err, buf) {
       const confirmationToken = buf.toString('hex');
+
+      // Create the user
       User.create({
         email: req.body.email,
         password: password,
@@ -22,7 +26,7 @@ exports.signUp = (req, res) => {
         confirmationTokenGeneratedAt: Date.now(),
       })
         .then((user) => {
-          res.status(200).send({
+          res.status(201).send({
             message: 'User registered successfully! Please check your email',
           });
           // TODO : send the confirmation email here
@@ -45,3 +49,5 @@ exports.confirmSignUp = (req, res) => {
     })
     .catch(unexpectedErrorCatch(res));
 };
+
+exports.signIn = (req, res) => {};

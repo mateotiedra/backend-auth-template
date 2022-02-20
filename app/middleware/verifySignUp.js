@@ -3,7 +3,7 @@ const db = require('../models/db.model');
 const User = db.user;
 
 // Check if the attribute is already used by another user
-uniqueAttribute = (attribute) => (req, res, next) => {
+exports.uniqueAttribute = (attribute) => (req, res, next) => {
   User.findOne({
     where: {
       [attribute]: req.body[attribute],
@@ -22,7 +22,7 @@ uniqueAttribute = (attribute) => (req, res, next) => {
 };
 
 // Check if the confirmation token is valid
-validConfirmationToken = (req, res, next) => {
+exports.validConfirmationToken = (req, res, next) => {
   User.findOne({
     where: {
       confirmationToken: req.body.confirmationToken,
@@ -44,10 +44,3 @@ validConfirmationToken = (req, res, next) => {
     })
     .catch(unexpectedErrorCatch(res));
 };
-
-const verifySignUp = {
-  uniqueAttribute,
-  validConfirmationToken,
-};
-
-module.exports = verifySignUp;
