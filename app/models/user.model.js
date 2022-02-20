@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
     },
     confirmationTokenGeneratedAt: {
-      type: 'TIMESTAMP',
+      type: DataTypes.BIGINT,
     },
     status: {
       type: DataTypes.ENUM('pending', 'active', 'disabled'),

@@ -13,6 +13,12 @@ module.exports = function (app) {
   app.post(
     '/auth/signup',
     [verifySignUp.uniqueAttribute('email')],
-    controller.signup
+    controller.signUp
+  );
+
+  app.post(
+    '/auth/signup/confirm',
+    [verifySignUp.validConfirmationToken],
+    controller.confirmSignUp
   );
 };

@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = require('./app/models/db.model');
 
 // true to set the database for the first time or reset it
-const resetDB = true;
+const resetDB = false;
 db.sequelize.sync({ force: resetDB }).then(() => {
   if (resetDB) {
     console.log('Drop and Resync Database with { force: true }');
