@@ -4,7 +4,8 @@ const crypto = require('crypto');
 
 const config = require('../config/auth.config');
 const db = require('../models/db.model');
-const { unexpectedErrorCatch } = require('../helper');
+const { unexpectedErrorCatch, userNotFoundRes } = require('../helper');
+const { use } = require('bcrypt/promises');
 
 const User = db.user;
 const Op = db.Sequelize.Op;
@@ -30,7 +31,7 @@ exports.signUp = (req, res) => {
             message: 'User registered successfully! Please check your email',
           });
           // TODO : send the confirmation email here
-          console.log(user.confirmationToken);
+          console.log('Confirmation token : ' + user.confirmationToken);
         })
         .catch(unexpectedErrorCatch(res));
     });
@@ -57,8 +58,24 @@ exports.signIn = (req, res) => {
     },
   })
     .then((user) => {
-      if (!user) return res.status(404).send({ message: 'User Not found.' });
-      bcrypt.compare(req.body.password, user.password, (err, same) => {});
+      if (!user) return userNotFoundRes(res);
+      return bcrypt.compare(req.body.password, user.password, (err, same) => {
+        if (same) {
+          if (user.status != 'active')
+            return res.status(202).send({ message: 'Mail not confirmed yet' });
+
+          return res.status(200).send({
+            accessToken: jwt.sign({ uuid: user.uuid }, config.secret),
+          });
+        }
+        return res.status(403).send({
+          message: 'Wrong email/password combination',
+        });
+      });
     })
     .catch(unexpectedErrorCatch(res));
+};
+
+exports.getUserBoard = (req, res) => {
+  return res.status(200).send({ email: req.user.email });
 };

@@ -1,9 +1,7 @@
-unexpectedErrorCatch = (res) => (err) => {
-  res.status(500).send({ message: err.message });
+exports.unexpectedErrorCatch = (res) => (err) => {
+  res.status(500).send({ message: 'Unexpected error : ' + err.message });
 };
 
-const helper = {
-  unexpectedErrorCatch,
+exports.userNotFoundRes = (res, object = 'User') => {
+  return res.status(404).send({ message: object + ' Not found.' });
 };
-
-module.exports = helper;
