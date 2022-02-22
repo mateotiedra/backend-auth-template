@@ -10,10 +10,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    confirmationToken: {
+    emailToken: {
       type: DataTypes.STRING,
     },
-    confirmationTokenGeneratedAt: {
+    emailTokenGeneratedAt: {
       type: DataTypes.BIGINT,
     },
     status: {

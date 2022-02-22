@@ -25,7 +25,7 @@ exports.uniqueAttribute = (attribute) => (req, res, next) => {
 exports.validConfirmationToken = (req, res, next) => {
   User.findOne({
     where: {
-      confirmationToken: req.body.confirmationToken,
+      emailToken: req.body.confirmationToken,
     },
   })
     .then((user) => {
@@ -39,6 +39,8 @@ exports.validConfirmationToken = (req, res, next) => {
           message: 'Confirmation token expired (+5 minutes) or already used',
         });
 
+      user.emailTokenGeneratedAt = 0;
+      user.emailToken = '';
       req.user = user;
       next();
     })

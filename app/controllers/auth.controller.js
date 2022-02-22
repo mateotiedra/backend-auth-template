@@ -23,8 +23,8 @@ exports.signUp = (req, res) => {
       User.create({
         email: req.body.email,
         password: password,
-        confirmationToken: confirmationToken,
-        confirmationTokenGeneratedAt: Date.now(),
+        emailToken: confirmationToken,
+        emailTokenGeneratedAt: Date.now(),
       })
         .then((user) => {
           res.status(201).send({
@@ -36,19 +36,6 @@ exports.signUp = (req, res) => {
         .catch(unexpectedErrorCatch(res));
     });
   });
-};
-
-exports.confirmSignUp = (req, res) => {
-  const user = req.user;
-  user.status = 'active';
-  user.confirmationTokenGeneratedAt = 0;
-  user.confirmationToken = '';
-  user
-    .save()
-    .then(() => {
-      res.status(200).send({ message: 'Mail confirmed!' });
-    })
-    .catch(unexpectedErrorCatch(res));
 };
 
 exports.signIn = (req, res) => {
@@ -74,6 +61,24 @@ exports.signIn = (req, res) => {
       });
     })
     .catch(unexpectedErrorCatch(res));
+};
+
+exports.signInViaEmailToken = (req, res) => {
+  const user = req.user;
+  if (user.status === 'pending') user.status = 'active';
+  user
+    .save()
+    .then(() => {
+      res.status(200).send({
+        accessToken: jwt.sign({ uuid: user.uuid }, config.secret),
+      });
+    })
+    .catch(unexpectedErrorCatch(res));
+};
+
+exports.sendEmailToken = (req, res) => {
+  // TODO : create new email token
+  // TODO : send the new email token to the user
 };
 
 exports.getUserBoard = (req, res) => {
