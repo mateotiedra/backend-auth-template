@@ -14,16 +14,20 @@ var corsOptions = {
 
 app.use(cors(corsOptions)); */
 
+// Use helmet for security
+const helmet = require('helmet');
+app.use(helmet());
+
+// Parse requests of content-type - application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }));
+
 // parse requests of content-type - application/json
 app.use(express.json());
 
-// parse requests of content-type - application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// database
+// Database
 const db = require('./app/models/db.model');
 
-// true to set the database for the first time or reset it
+// True to set the database for the first time or reset it
 const resetDB = false;
 db.sequelize.sync({ force: resetDB }).then(() => {
   if (resetDB) {
