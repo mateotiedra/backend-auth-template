@@ -11,11 +11,11 @@ const Op = db.Sequelize.Op;
 
 exports.signUp = (req, res) => {
   // Hash the password
-  bcrypt.hash(req.body.password, 10, function (err, hash) {
+  bcrypt.hash(req.body.password, 10, (err, hash) => {
     const password = hash;
 
     // Generate the confirmation token
-    crypto.randomBytes(16, function (err, buf) {
+    crypto.randomBytes(16, (err, buf) => {
       const confirmationToken = buf.toString('hex');
 
       // Create the user
@@ -50,4 +50,15 @@ exports.confirmSignUp = (req, res) => {
     .catch(unexpectedErrorCatch(res));
 };
 
-exports.signIn = (req, res) => {};
+exports.signIn = (req, res) => {
+  User.findOne({
+    where: {
+      email: req.body.email,
+    },
+  })
+    .then((user) => {
+      if (!user) return res.status(404).send({ message: 'User Not found.' });
+      bcrypt.compare(req.body.password, user.password, (err, same) => {});
+    })
+    .catch(unexpectedErrorCatch(res));
+};
