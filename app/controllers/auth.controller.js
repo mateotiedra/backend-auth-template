@@ -10,7 +10,7 @@ const { use } = require('bcrypt/promises');
 const User = db.user;
 const Op = db.Sequelize.Op;
 
-exports.signUp = (req, res) => {
+const signUp = (req, res) => {
   // Hash the password
   bcrypt.hash(req.body.password, 10, (err, hash) => {
     const password = hash;
@@ -38,7 +38,7 @@ exports.signUp = (req, res) => {
   });
 };
 
-exports.signIn = (req, res) => {
+const signIn = (req, res) => {
   User.findOne({
     where: {
       email: req.body.email,
@@ -63,7 +63,12 @@ exports.signIn = (req, res) => {
     .catch(unexpectedErrorCatch(res));
 };
 
-exports.signInViaEmailToken = (req, res) => {
+const sendEmailToken = (req, res) => {
+  // TODO : create new email token
+  // TODO : send the new email token to the user
+};
+
+const signInViaEmailToken = (req, res) => {
   const user = req.user;
   if (user.status === 'pending') user.status = 'active';
   user
@@ -76,11 +81,14 @@ exports.signInViaEmailToken = (req, res) => {
     .catch(unexpectedErrorCatch(res));
 };
 
-exports.sendEmailToken = (req, res) => {
-  // TODO : create new email token
-  // TODO : send the new email token to the user
+const getUserBoard = (req, res) => {
+  return res.status(200).send({ email: req.user.email });
 };
 
-exports.getUserBoard = (req, res) => {
-  return res.status(200).send({ email: req.user.email });
+module.exports = {
+  signUp,
+  signIn,
+  sendEmailToken,
+  signInViaEmailToken,
+  getUserBoard,
 };

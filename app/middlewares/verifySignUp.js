@@ -3,7 +3,7 @@ const db = require('../models/db.model');
 const User = db.user;
 
 // Check if the attribute is already used by another user
-exports.uniqueAttribute = (attribute) => (req, res, next) => {
+const uniqueAttribute = (attribute) => (req, res, next) => {
   User.findOne({
     where: {
       [attribute]: req.body[attribute],
@@ -22,7 +22,7 @@ exports.uniqueAttribute = (attribute) => (req, res, next) => {
 };
 
 // Check if the confirmation token is valid
-exports.validEmailToken = (req, res, next) => {
+const validEmailToken = (req, res, next) => {
   User.findOne({
     where: {
       emailToken: req.body.emailToken,
@@ -42,4 +42,9 @@ exports.validEmailToken = (req, res, next) => {
       next();
     })
     .catch(unexpectedErrorCatch(res));
+};
+
+module.exports = {
+  uniqueAttribute,
+  validEmailToken,
 };

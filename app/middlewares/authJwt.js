@@ -5,7 +5,7 @@ const { unexpectedErrorCatch, userNotFoundRes } = require('../helper');
 const db = require('../models/db.model');
 const User = db.user;
 
-exports.verifyToken = (req, res, next) => {
+const verifyToken = (req, res, next) => {
   let token = req.headers['x-access-token'];
   if (!token) {
     return res.status(401).send({
@@ -33,3 +33,5 @@ exports.verifyToken = (req, res, next) => {
       .catch(unexpectedErrorCatch(res));
   });
 };
+
+module.exports = { verifyToken };
