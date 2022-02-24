@@ -1,4 +1,4 @@
-const { unexpectedErrorCatch } = require('../helper');
+const { unexpectedErrorCatch } = require('../helpers/errorCatch.helper');
 const db = require('../models/db.model');
 const User = db.user;
 
@@ -32,7 +32,7 @@ const validEmailToken = (req, res, next) => {
       if (!user)
         return res.status(404).send({ message: 'Email token does not exist' });
 
-      if (Date.now() - user.emailGeneratedAt > 10 * 60 * 1000)
+      if (Date.now() - user.emailTokenGeneratedAt > 10 * 60 * 1000)
         return res.status(410).send({
           message: 'Email token expired (+5 minutes) or already used',
         });

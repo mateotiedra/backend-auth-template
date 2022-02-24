@@ -1,8 +1,12 @@
 const {
   uniqueAttribute,
   validEmailToken,
-} = require('../middlewares/verifySignUp');
-const { verifyToken } = require('../middlewares/authJwt');
+} = require('../middlewares/verifySignUp.middleware');
+const {
+  verifyAccessToken,
+  verifyStatus,
+  findUser,
+} = require('../middlewares/user.middleware');
 const controller = require('../controllers/auth.controller');
 
 module.exports = function (app) {
@@ -17,19 +21,37 @@ module.exports = function (app) {
   // Register a new user
   app.post('/auth/signup', [uniqueAttribute('email')], controller.signUp);
 
-  // Get access to the token via email (to confirm the status or to reset the password)
-  app.post(
-    ['/auth/recover-token', '/auth/signup/confirm'],
-    [validEmailToken],
-    controller.signInViaEmailToken
+  // Resend confirmation email
+  app.put(
+    '/auth/signup/resend',
+    [findUser('email'), verifyStatus(['pending'])],
+    controller.resendConfirmation
   );
 
-  // Send a reset password link
-  app.put('/auth/password-reset', controller.signIn);
+  // Confirm the email
+  app.put(
+    '/auth/signup/confirm',
+    [validEmailToken, verifyStatus(['pending'])],
+    controller.confirmEmail
+  );
+
+  // Create a new token and send a reset password link
+  app.put(
+    '/auth/reset-password',
+    [findUser('email'), verifyStatus(['active'])],
+    controller.resetPassword
+  );
+
+  // Get access to the token via email (to reset the password)
+  app.put(
+    '/auth/recover',
+    [validEmailToken, verifyStatus(['active'])],
+    controller.recover
+  );
 
   // Sign in the user
   app.post('/auth/signin', controller.signIn);
 
   // Get the user's basics infos
-  app.get('/u', [verifyToken], controller.getUserBoard);
+  app.get('/u', [verifyAccessToken], controller.getUserBoard);
 };

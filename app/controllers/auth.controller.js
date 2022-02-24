@@ -4,8 +4,11 @@ const crypto = require('crypto');
 
 const config = require('../config/auth.config');
 const db = require('../models/db.model');
-const { unexpectedErrorCatch, userNotFoundRes } = require('../helper');
-const { use } = require('bcrypt/promises');
+const {
+  unexpectedErrorCatch,
+  userNotFoundRes,
+} = require('../helpers/errorCatch.helper');
+const mailController = require('../controllers/mail.controller');
 
 const User = db.user;
 const Op = db.Sequelize.Op;
@@ -27,11 +30,16 @@ const signUp = (req, res) => {
         emailTokenGeneratedAt: Date.now(),
       })
         .then((user) => {
-          res.status(201).send({
-            message: 'User registered successfully! Please check your email',
+          return mailController.sendConfirmation({
+            email: user.email,
+            emailToken: user.emailToken,
+            success: () => {
+              res.status(201).send({
+                message:
+                  'User registered successfully! Please check your email',
+              });
+            },
           });
-          // TODO : send the confirmation email here
-          console.log('\nConfirmation token : ' + user.emailToken + '\n');
         })
         .catch(unexpectedErrorCatch(res));
     });
@@ -63,14 +71,34 @@ const signIn = (req, res) => {
     .catch(unexpectedErrorCatch(res));
 };
 
-const sendEmailToken = (req, res) => {
-  // TODO : create new email token
-  // TODO : send the new email token to the user
-};
+const sendEmailToken =
+  (emailType = 'confirmation') =>
+  (req, res) => {
+    const user = req.user;
+    crypto.randomBytes(16, (err, buf) => {
+      user.emailToken = buf.toString('hex');
+      user.emailTokenGeneratedAt = Date.now();
+      return user.save().then(() => {
+        const options = {
+          email: user.email,
+          emailToken: user.emailToken,
+          success: () => {
+            return res
+              .status(202)
+              .send({ message: emailType + ' email sent!' });
+          },
+        };
+        emailType === 'confirmation'
+          ? mailController.sendConfirmation(options)
+          : mailController.sendResetPassword(options);
+      });
+    });
+  };
 
-const signInViaEmailToken = (req, res) => {
+// Confirm the email
+const confirmEmail = (req, res) => {
   const user = req.user;
-  if (user.status === 'pending') user.status = 'active';
+  user.status = 'active';
   user
     .save()
     .then(() => {
@@ -81,14 +109,24 @@ const signInViaEmailToken = (req, res) => {
     .catch(unexpectedErrorCatch(res));
 };
 
+// Sign in the user if he forgot the password in order to change it -> send the access token
+const recover = (req, res) => {
+  const user = req.user;
+  res.status(200).send({
+    accessToken: jwt.sign({ uuid: user.uuid }, config.secret),
+  });
+};
+
 const getUserBoard = (req, res) => {
   return res.status(200).send({ email: req.user.email });
 };
 
 module.exports = {
   signUp,
+  resendConfirmation: sendEmailToken('confirmation'),
   signIn,
-  sendEmailToken,
-  signInViaEmailToken,
+  resetPassword: sendEmailToken('reset'),
+  confirmEmail,
+  recover,
   getUserBoard,
 };
