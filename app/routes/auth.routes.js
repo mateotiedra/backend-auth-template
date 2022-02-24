@@ -1,6 +1,6 @@
 const {
   uniqueAttribute,
-  validConfirmationToken,
+  validEmailToken,
 } = require('../middlewares/verifySignUp');
 const { verifyToken } = require('../middlewares/authJwt');
 const controller = require('../controllers/auth.controller');
@@ -17,18 +17,10 @@ module.exports = function (app) {
   // Register a new user
   app.post('/auth/signup', [uniqueAttribute('email')], controller.signUp);
 
-  // Confirm the signUp with a confirmation token
-  /*   app.patch(
-    '/auth/signup/confirm',
-    [validConfirmationToken],
-    controller.signInViaConfirmationCode
-  );
- */
-
-  // Get access to the token via email (update the status is needed)
+  // Get access to the token via email (to confirm the status or to reset the password)
   app.post(
     ['/auth/recover-token', '/auth/signup/confirm'],
-    [validConfirmationToken],
+    [validEmailToken],
     controller.signInViaEmailToken
   );
 

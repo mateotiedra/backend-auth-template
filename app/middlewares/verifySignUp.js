@@ -22,25 +22,22 @@ exports.uniqueAttribute = (attribute) => (req, res, next) => {
 };
 
 // Check if the confirmation token is valid
-exports.validConfirmationToken = (req, res, next) => {
+exports.validEmailToken = (req, res, next) => {
   User.findOne({
     where: {
-      emailToken: req.body.confirmationToken,
+      emailToken: req.body.emailToken,
     },
   })
     .then((user) => {
       if (!user)
-        return res
-          .status(404)
-          .send({ message: 'Confirmation token not found' });
+        return res.status(404).send({ message: 'Email token does not exist' });
 
-      if (Date.now() - user.confirmationTokenGeneratedAt > 10 * 60 * 1000)
+      if (Date.now() - user.emailGeneratedAt > 10 * 60 * 1000)
         return res.status(410).send({
-          message: 'Confirmation token expired (+5 minutes) or already used',
+          message: 'Email token expired (+5 minutes) or already used',
         });
 
       user.emailTokenGeneratedAt = 0;
-      user.emailToken = '';
       req.user = user;
       next();
     })

@@ -17,13 +17,13 @@ exports.signUp = (req, res) => {
 
     // Generate the confirmation token
     crypto.randomBytes(16, (err, buf) => {
-      const confirmationToken = buf.toString('hex');
+      const emailToken = buf.toString('hex');
 
       // Create the user
       User.create({
         email: req.body.email,
         password: password,
-        emailToken: confirmationToken,
+        emailToken: emailToken,
         emailTokenGeneratedAt: Date.now(),
       })
         .then((user) => {
@@ -31,7 +31,7 @@ exports.signUp = (req, res) => {
             message: 'User registered successfully! Please check your email',
           });
           // TODO : send the confirmation email here
-          console.log('Confirmation token : ' + user.confirmationToken);
+          console.log('\nConfirmation token : ' + user.emailToken + '\n');
         })
         .catch(unexpectedErrorCatch(res));
     });
