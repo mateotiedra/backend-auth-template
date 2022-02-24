@@ -16,12 +16,16 @@ module.exports = (sequelize, DataTypes) => {
     emailTokenGeneratedAt: {
       type: DataTypes.BIGINT,
     },
+    password: {
+      type: DataTypes.STRING,
+    },
     status: {
       type: DataTypes.ENUM('pending', 'active', 'disabled'),
       defaultValue: 'pending',
     },
-    password: {
-      type: DataTypes.STRING,
+    role: {
+      type: DataTypes.ENUM('admin', 'mode', 'user'),
+      defaultValue: 'user',
     },
   };
 
