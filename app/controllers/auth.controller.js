@@ -75,6 +75,10 @@ const sendEmailToken =
   (emailType = 'confirmation') =>
   (req, res) => {
     const user = req.user;
+    if (Date.now() - user.emailTokenGeneratedAt < 3 * 60 * 1000)
+      return res.status(409).send({
+        message: 'Wait before sending a new email',
+      });
     crypto.randomBytes(16, (err, buf) => {
       user.emailToken = buf.toString('hex');
       user.emailTokenGeneratedAt = Date.now();
