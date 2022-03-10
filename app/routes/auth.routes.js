@@ -1,14 +1,12 @@
 const {
   uniqueAttribute,
   validEmailToken,
-} = require('../middlewares/verifySignUp.middleware');
-const {
   verifyAccessToken,
   verifyStatus,
   findUser,
 } = require('../middlewares/user.middleware');
-const controller = require('../controllers/auth.controller');
 const { verifyRequestBody } = require('../middlewares/request.middleware');
+const controller = require('../controllers/auth.controller');
 
 module.exports = function (app) {
   app.use(function (req, res, next) {
