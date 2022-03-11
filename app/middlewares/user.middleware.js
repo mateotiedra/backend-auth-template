@@ -56,27 +56,6 @@ const verifyRole = (allowedRoles) => (req, res, next) => {
   next();
 };
 
-const findUser = (attribute) => (req, res, next) => {
-  if (attribute === 'accessToken') return verifyAccessToken(req, res, next);
-
-  if (!req.body[attribute])
-    return res
-      .status(400)
-      .send({ message: 'Missing attributes to find the user' });
-
-  User.findOne({
-    where: {
-      [attribute]: req.body[attribute],
-    },
-  })
-    .then((user) => {
-      if (!user) return objectNotFoundRes(res);
-      req.user = user;
-      next();
-    })
-    .catch(unexpectedErrorCatch(res));
-};
-
 // Check if the confirmation token is valid
 const validEmailToken = (req, res, next) => {
   User.findOne({
@@ -104,6 +83,5 @@ module.exports = {
   verifyAccessToken,
   verifyStatus,
   verifyRole,
-  findUser,
   validEmailToken,
 };

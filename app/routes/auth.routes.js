@@ -2,10 +2,10 @@ const {
   validEmailToken,
   verifyAccessToken,
   verifyStatus,
-  findUser,
 } = require('../middlewares/user.middleware');
 const { verifyRequestBody } = require('../middlewares/request.middleware');
 const controller = require('../controllers/auth.controller');
+const { findUserByAttribute } = require('../middlewares/findes.middleware');
 
 module.exports = function (app) {
   app.use(function (req, res, next) {
@@ -28,7 +28,7 @@ module.exports = function (app) {
     '/auth/signup/resend',
     [
       verifyRequestBody(['email']),
-      findUser('email'),
+      findUserByAttribute('email'),
       verifyStatus(['pending']),
     ],
     controller.resendConfirmation
@@ -48,7 +48,11 @@ module.exports = function (app) {
   // Create a new token and send a reset password link
   app.put(
     '/auth/reset-password',
-    [verifyRequestBody(['email']), findUser('email'), verifyStatus(['active'])],
+    [
+      verifyRequestBody(['email']),
+      findUserByAttribute('email'),
+      verifyStatus(['active']),
+    ],
     controller.resetPassword
   );
 
