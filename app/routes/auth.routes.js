@@ -1,5 +1,4 @@
 const {
-  uniqueAttribute,
   validEmailToken,
   verifyAccessToken,
   verifyStatus,
@@ -20,7 +19,7 @@ module.exports = function (app) {
   // Register a new user
   app.post(
     '/auth/signup',
-    [verifyRequestBody(['password', 'email']), uniqueAttribute('email')],
+    [verifyRequestBody(['password', 'email'])],
     controller.signUp
   );
 

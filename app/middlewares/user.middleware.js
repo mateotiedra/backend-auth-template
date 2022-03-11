@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config/auth.config.js');
 const {
   unexpectedErrorCatch,
-  userNotFoundRes,
+  objectNotFoundRes,
 } = require('../helpers/errorCatch.helper');
 const db = require('../models/db.model');
 const User = db.user;
@@ -29,7 +29,7 @@ const verifyAccessToken = (req, res, next) => {
       },
     })
       .then((user) => {
-        if (!user) return userNotFoundRes(res);
+        if (!user) return objectNotFoundRes(res);
         req.user = user;
         verifyStatus(['active'])(req, res, next);
       })
@@ -70,26 +70,8 @@ const findUser = (attribute) => (req, res, next) => {
     },
   })
     .then((user) => {
-      if (!user) return userNotFoundRes(res);
+      if (!user) return objectNotFoundRes(res);
       req.user = user;
-      next();
-    })
-    .catch(unexpectedErrorCatch(res));
-};
-
-const uniqueAttribute = (attribute) => (req, res, next) => {
-  User.findOne({
-    where: {
-      [attribute]: req.body[attribute],
-    },
-  })
-    .then((user) => {
-      if (user) {
-        return res.status(409).send({
-          message: `Failed! The ${attribute} is already in use!`,
-        });
-      }
-
       next();
     })
     .catch(unexpectedErrorCatch(res));
@@ -121,7 +103,7 @@ const validEmailToken = (req, res, next) => {
 module.exports = {
   verifyAccessToken,
   verifyStatus,
+  verifyRole,
   findUser,
-  uniqueAttribute,
   validEmailToken,
 };

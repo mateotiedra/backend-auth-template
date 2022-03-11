@@ -6,7 +6,8 @@ const config = require('../config/auth.config');
 const db = require('../models/db.model');
 const {
   unexpectedErrorCatch,
-  userNotFoundRes,
+  uniqueAttributeErrorCatch,
+  objectNotFoundRes,
 } = require('../helpers/errorCatch.helper');
 const mailController = require('../controllers/mail.controller');
 
@@ -41,7 +42,7 @@ const signUp = (req, res) => {
             },
           });
         })
-        .catch(unexpectedErrorCatch(res));
+        .catch(uniqueAttributeErrorCatch(res, unexpectedErrorCatch));
     });
   });
 };
@@ -53,7 +54,7 @@ const signIn = (req, res) => {
     },
   })
     .then((user) => {
-      if (!user) return userNotFoundRes(res);
+      if (!user) return objectNotFoundRes(res);
       return bcrypt.compare(req.body.password, user.password, (err, same) => {
         if (same) {
           if (user.status != 'active')
