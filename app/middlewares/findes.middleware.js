@@ -9,28 +9,29 @@ const {
 
 const db = require('../models/db.model');
 const User = db.user;
-const Event = db.event;
 
 const findObjectByAttribute =
   (DefinedObject, definedObjectName) => (attribute) => (req, res, next) => {
-    const attributeInBody = Object.keys(req.body).length != 0;
+    const attributeInQueryParams = req.method === 'GET';
     if (
-      (attributeInBody && verifyRequestBody([attribute])(req, res, () => {})) ||
-      verifyQueryParams([attribute])(req, res, () => {})
+      (!attributeInQueryParams &&
+        verifyRequestBody([attribute])(req, res, () => {})) ||
+      (attributeInQueryParams === 'GET' &&
+        verifyQueryParams([attribute])(req, res, () => {}))
     ) {
       return;
     }
 
     DefinedObject.findOne({
       where: {
-        [attribute]: attributeInBody
-          ? req.body[attribute]
-          : req.query[attribute],
+        [attribute]: attributeInQueryParams
+          ? req.query[attribute]
+          : req.body[attribute],
       },
     })
       .then((definedObject) => {
         if (!definedObject) return objectNotFoundRes(res, 'Object');
-        req[definedObjectName] = definedObject.dataValues;
+        req[definedObjectName] = definedObject;
         next();
       })
       .catch(unexpectedErrorCatch(res));
@@ -38,7 +39,6 @@ const findObjectByAttribute =
 
 const objectFinders = {
   findUserByAttribute: findObjectByAttribute(User, 'user'),
-  findEventByAttribute: findObjectByAttribute(Event, 'event'),
 };
 
 module.exports = {
