@@ -39,9 +39,18 @@ const verifyAccessToken = (req, res, next) => {
 
 const verifyStatus = (allowedStatus) => (req, res, next) => {
   if (!allowedStatus.includes(req.user.status))
-    return res.status(401).send({
+    return res.status(403).send({
       message:
         'The user is not allowed here, actual status : ' + req.user.status,
+    });
+
+  next();
+};
+
+const verifyRole = (allowedRoles) => (req, res, next) => {
+  if (!allowedRoles.includes(req.user.role))
+    return res.status(403).send({
+      message: 'The user is not allowed here, user role : ' + req.user.role,
     });
 
   next();
