@@ -6,7 +6,8 @@ const config = require('../config/auth.config');
 const db = require('../models/db.model');
 const {
   unexpectedErrorCatch,
-  userNotFoundRes,
+  uniqueAttributeErrorCatch,
+  objectNotFoundRes,
 } = require('../helpers/errorCatch.helper');
 const mailController = require('../controllers/mail.controller');
 
@@ -30,18 +31,20 @@ const signUp = (req, res) => {
         emailTokenGeneratedAt: Date.now(),
       })
         .then((user) => {
-          return mailController.sendConfirmation({
-            email: user.email,
-            emailToken: user.emailToken,
-            success: () => {
-              res.status(201).send({
+          mailController
+            .sendAccountConfirmation({
+              email: user.email,
+              name: user.firstName,
+              emailToken: user.emailToken,
+            })
+            .then(() => {
+              res.status(201).json({
                 message:
                   'User registered successfully! Please check your email',
               });
-            },
-          });
+            });
         })
-        .catch(unexpectedErrorCatch(res));
+        .catch(uniqueAttributeErrorCatch(res, unexpectedErrorCatch));
     });
   });
 };
@@ -53,17 +56,17 @@ const signIn = (req, res) => {
     },
   })
     .then((user) => {
-      if (!user) return userNotFoundRes(res);
+      if (!user) return objectNotFoundRes(res);
       return bcrypt.compare(req.body.password, user.password, (err, same) => {
         if (same) {
-          if (user.status != 'active')
-            return res.status(202).send({ message: 'Mail not confirmed yet' });
+          if (user.status !== 'active')
+            return res.status(202).json({ message: 'Mail not confirmed yet' });
 
-          return res.status(200).send({
-            accessToken: jwt.sign({ uuid: user.uuid }, config.secret),
+          return res.status(200).json({
+            accessToken: jwt.sign({ uuid: user.uuid }, config.SECRET),
           });
         }
-        return res.status(403).send({
+        return res.status(403).json({
           message: 'Wrong email/password combination',
         });
       });
@@ -76,7 +79,7 @@ const sendEmailToken =
   (req, res) => {
     const user = req.user;
     if (Date.now() - user.emailTokenGeneratedAt < 3 * 60 * 1000)
-      return res.status(409).send({
+      return res.status(409).json({
         message: 'Wait before sending a new email',
       });
     crypto.randomBytes(16, (err, buf) => {
@@ -86,15 +89,14 @@ const sendEmailToken =
         const options = {
           email: user.email,
           emailToken: user.emailToken,
-          success: () => {
-            return res
-              .status(202)
-              .send({ message: emailType + ' email sent!' });
-          },
         };
-        emailType === 'confirmation'
-          ? mailController.sendConfirmation(options)
-          : mailController.sendResetPassword(options);
+
+        (emailType === 'confirmation'
+          ? mailController.sendAccountConfirmation(options)
+          : mailController.sendResetPassword(options)
+        ).then(() => {
+          return res.status(202).json({ message: emailType + ' email sent!' });
+        });
       });
     });
   };
@@ -106,8 +108,8 @@ const confirmEmail = (req, res) => {
   user
     .save()
     .then(() => {
-      res.status(200).send({
-        accessToken: jwt.sign({ uuid: user.uuid }, config.secret),
+      res.status(200).json({
+        accessToken: jwt.sign({ uuid: user.uuid }, config.SECRET),
       });
     })
     .catch(unexpectedErrorCatch(res));
@@ -116,13 +118,9 @@ const confirmEmail = (req, res) => {
 // Sign in the user if he forgot the password in order to change it -> send the access token
 const recover = (req, res) => {
   const user = req.user;
-  res.status(200).send({
-    accessToken: jwt.sign({ uuid: user.uuid }, config.secret),
+  res.status(200).json({
+    accessToken: jwt.sign({ uuid: user.uuid }, config.SECRET),
   });
-};
-
-const getUserBoard = (req, res) => {
-  return res.status(200).send({ email: req.user.email });
 };
 
 module.exports = {
@@ -132,5 +130,4 @@ module.exports = {
   resetPassword: sendEmailToken('reset'),
   confirmEmail,
   recover,
-  getUserBoard,
 };

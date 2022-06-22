@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
     email: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
     emailToken: {
       type: DataTypes.STRING,
@@ -24,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 'pending',
     },
     role: {
-      type: DataTypes.ENUM('admin', 'mode', 'user'),
+      type: DataTypes.ENUM('admin', 'mod', 'user'),
       defaultValue: 'user',
     },
   };

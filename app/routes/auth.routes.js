@@ -1,26 +1,16 @@
 const {
-  uniqueAttribute,
   validEmailToken,
-  verifyAccessToken,
   verifyStatus,
-  findUser,
 } = require('../middlewares/user.middleware');
 const { verifyRequestBody } = require('../middlewares/request.middleware');
 const controller = require('../controllers/auth.controller');
+const { findUserByAttribute } = require('../middlewares/finders.middleware');
 
 module.exports = function (app) {
-  app.use(function (req, res, next) {
-    res.header(
-      'Access-Control-Allow-Headers',
-      'x-access-token, Origin, Content-Type, Accept'
-    );
-    next();
-  });
-
   // Register a new user
   app.post(
     '/auth/signup',
-    [verifyRequestBody(['password', 'email']), uniqueAttribute('email')],
+    [verifyRequestBody(['password', 'email'])],
     controller.signUp
   );
 
@@ -29,7 +19,7 @@ module.exports = function (app) {
     '/auth/signup/resend',
     [
       verifyRequestBody(['email']),
-      findUser('email'),
+      findUserByAttribute('email'),
       verifyStatus(['pending']),
     ],
     controller.resendConfirmation
@@ -49,7 +39,11 @@ module.exports = function (app) {
   // Create a new token and send a reset password link
   app.put(
     '/auth/reset-password',
-    [verifyRequestBody(['email']), findUser('email'), verifyStatus(['active'])],
+    [
+      verifyRequestBody(['email']),
+      findUserByAttribute('email'),
+      verifyStatus(['active']),
+    ],
     controller.resetPassword
   );
 
@@ -70,7 +64,4 @@ module.exports = function (app) {
     [verifyRequestBody(['password', 'email'])],
     controller.signIn
   );
-
-  // Get the user's basics infos
-  app.get('/u', [verifyAccessToken], controller.getUserBoard);
 };

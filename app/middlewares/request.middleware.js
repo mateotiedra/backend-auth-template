@@ -4,9 +4,25 @@ const verifyRequestBody = (requiredBodyKeys) => (req, res, next) => {
   if (missingKeys.length)
     return res
       .status(400)
-      .send({ message: 'Bad request. Missing key(s) : ' + missingKeys });
+      .json({ message: 'Bad request. Missing key(s) in body: ' + missingKeys });
 
   next();
 };
 
-module.exports = { verifyRequestBody };
+const verifyQueryParams = (requiredBodyKeys) => (req, res, next) => {
+  const bodyKeys = Object.keys(req.query);
+  const missingKeys = requiredBodyKeys.filter(
+    (n) => !bodyKeys.includes(n) || n === 'undefined'
+  );
+  if (missingKeys.length)
+    return res.status(400).json({
+      message: 'Bad request. Missing params(s) in query: ' + missingKeys,
+    });
+
+  next();
+};
+
+module.exports = {
+  verifyRequestBody,
+  verifyQueryParams,
+};

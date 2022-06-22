@@ -1,18 +1,28 @@
-require('dotenv').config();
+const config = require('./app/config/server.config.js');
 
 const express = require('express');
 const bodyParser = require('body-parser');
 
 const app = express();
 
-/*const cors = require('cors');
+const cors = require('cors');
+
+var whitelist = [];
+
+// Cors options
 var corsOptions = {
-  origin: process.env.APP_ORIGIN,
-  methods: ['GET', 'POST', 'DELETE'],
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1 || !config.PRODUCTION) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS, origin not in the list'));
+    }
+  },
+  methods: ['GET', 'POST', 'DELETE', 'PUT'],
   credentials: true,
 };
 
-app.use(cors(corsOptions)); */
+app.use(cors(corsOptions));
 
 // Use express-rate-limit to prevent too many requests
 const rateLimit = require('express-rate-limit');
@@ -22,7 +32,8 @@ const limiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
-app.use(limiter);
+
+if (config.PRODUCTION) app.use(limiter);
 
 // Use helmet for security
 const helmet = require('helmet');
@@ -51,11 +62,20 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the api.' });
 });
 
+app.use(function (req, res, next) {
+  res.header(
+    'Access-Control-Allow-Headers',
+    'x-access-token, Origin, Content-Type, Accept'
+  );
+  next();
+});
+
 // routes
 require('./app/routes/auth.routes')(app);
+require('./app/routes/user.routes')(app);
 
 // set port, listen for requests
-const PORT = process.env.PORT || 8080;
+const PORT = config.PORT;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
