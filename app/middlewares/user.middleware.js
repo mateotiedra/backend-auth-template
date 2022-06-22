@@ -30,7 +30,7 @@ const verifyAccessToken = (req, res, next) => {
       },
     })
       .then((user) => {
-        if (!user) return objectNotFoundRes(res, 'User');
+        if (!user) return objectNotFoundRes(res);
         req.user = user;
         verifyStatus(['active'])(req, res, next);
       })
